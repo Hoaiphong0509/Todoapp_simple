@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODO APP</title>
+    <link rel="icon"
+        href="https://cdn-icons.flaticon.com/png/512/2387/premium/2387635.png?token=exp=1649586290~hmac=117f3109a46da6efb128016aab023233"
+        sizes="16x16">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+
+    <!--🔥🔥🔥 STYLES CSS  🔥🔥🔥-->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+
+        :root {
+            --white-origin: #fff;
+            --white: #FFFEE8;
+            --black: #27363B;
+            --red: #FE5F5C;
+            --sky: #01CDCA;
+            --blue: #497be8;
+            --yellow: #FEEC66
+        }
+
+
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        ::selection {
+            color: var(--white);
+            background: var(--sky);
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            /* overflow: hidden; */
+            padding: 10px;
+            background: linear-gradient(to bottom, var(--sky) 0%, var(--blue) 100%);
+        }
+
+        header,
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-weight: bold;
+            text-transform: uppercase;
+            color: var(--black);
+        }
+
+        .wrapper {
+            background: var(--white-origin);
+            max-width: 400px;
+            width: 100%;
+            margin: 120px auto;
+            padding: 25px;
+            border-radius: 5px;
+            box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        }
+
+        .wrapper header {
+            font-size: 30px;
+            font-weight: 600;
+        }
+
+        .wrapper .inputField {
+            margin: 20px 0;
+            width: 100%;
+            display: flex;
+            height: 45px;
+        }
+
+        .inputField input {
+            width: 85%;
+            height: 100%;
+            outline: none;
+            border-radius: 3px;
+            border: 1px solid #ccc;
+            font-size: 17px;
+            padding-left: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .inputField input:focus {
+            border-color: var(--sky);
+        }
+
+        .inputField button {
+            width: 50px;
+            height: 100%;
+            border: none;
+            color: var(--white);
+            margin-left: 5px;
+            font-size: 21px;
+            outline: none;
+            background: var(--sky);
+            cursor: pointer;
+            border-radius: 3px;
+            opacity: 0.6;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .inputField button:hover,
+        .footer button:hover {
+            background: var(--blue);
+        }
+
+        .inputField button.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .wrapper .todoList {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .todoList li {
+            position: relative;
+            list-style: none;
+            margin-bottom: 8px;
+            background: var(--white);
+            border-radius: 3px;
+            padding: 10px 15px;
+            cursor: default;
+            overflow: hidden;
+            word-wrap: break-word;
+        }
+
+        .todoList li .icon {
+            position: absolute;
+            right: -45px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--red);
+            width: 45px;
+            text-align: center;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 0 3px 3px 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .todoList li:hover .icon {
+            right: 0px;
+        }
+
+        .wrapper .footer {
+            display: flex;
+            width: 100%;
+            margin-top: 20px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .footer button {
+            padding: 6px 10px;
+            border-radius: 3px;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-weight: 400;
+            font-size: 16px;
+            margin-left: 5px;
+            background: var(--sky);
+            cursor: pointer;
+            user-select: none;
+            opacity: 0.6;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer button.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <!--🔥🔥🔥 HTML 🔥🔥🔥-->
+    <div class="wrapper">
+        <header>Todo App</header>
+        <div class="inputField">
+            <input type="text" placeholder="Thêm một task mới">
+            <button><i class="fas fa-plus"></i></button>
+        </div>
+        <ul class="todoList">
+            <!-- data are comes from local storage -->
+        </ul>
+        <div class="footer">
+            <span>Hiện đang có <span class="pendingTasks"></span> tasks</span>
+            <button>Xóa tất cả</button>
+        </div>
+    </div>
+
+    <!--🔥🔥🔥 JAVASCRIPT 🔥🔥🔥-->
+    <script>
+        const $ = document.querySelector.bind(document)
+        const $$ = document.querySelectorAll.bind(document)
+
+        const TODO_STORAGE_KEY = 'todo-list'
+
+        const inputBox = $('.inputField input')
+        const addBtn = $('.inputField button')
+        const todoList = $('.todoList')
+        const deleteAllBtn = $('.footer button')
+        const pendingTasksNumb = $('.pendingTasks')
+
+        const app = {
+            currentIndex: 0,
+            listArray: [],
+            showTasks: function () {
+                let getLocalStorageData = localStorage.getItem(TODO_STORAGE_KEY)
+                if (getLocalStorageData) this.listArray = JSON.parse(getLocalStorageData)
+
+                pendingTasksNumb.textContent = this.listArray.length
+                if (this.listArray.length > 0) {
+                    deleteAllBtn.classList.add('active')
+                } else {
+                    deleteAllBtn.classList.remove('active')
+                }
+                let newLiTag = ''
+                this.listArray.forEach((element, index) => {
+                    newLiTag += `<li ${index === this.currentIndex ? 'active' : ''
+                        } data-index="${index}">${element}<span class="icon" ><i class="fas fa-trash"></i></span></li>`
+                })
+                todoList.innerHTML = newLiTag
+                inputBox.value = ''
+            },
+
+            // delete task function
+            deleteTask: function (index) {
+                let getLocalStorageData = localStorage.getItem(TODO_STORAGE_KEY)
+                this.listArray = JSON.parse(getLocalStorageData)
+                this.listArray.splice(index, 1)
+                localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(this.listArray))
+                this.showTasks()
+            },
+            addTask: function (value) {
+                const getLocalStorageData = localStorage.getItem(TODO_STORAGE_KEY)
+                if (getLocalStorageData) this.listArray = JSON.parse(getLocalStorageData)
+
+                this.listArray.push(value)
+                localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(this.listArray))
+                this.showTasks()
+                addBtn.classList.remove('active')
+            },
+            // @TODO EDIT TASK
+            editTask: function () { },
+            handleEvents: function () {
+                const _this = this
+
+                //active button add onkeyup
+                inputBox.onkeyup = () => {
+                    let userEnteredValue = inputBox.value
+                    if (userEnteredValue.trim() != 0)
+                        addBtn.classList.add('active')
+                    else
+                        addBtn.classList.remove('active')
+
+                }
+
+                //add task by press ENTER
+                inputBox.addEventListener('keyup', (e) => {
+                    if (e.key == 'Enter' && inputBox.value)
+                        _this.addTask(inputBox.value)
+
+                })
+
+                //add task by click button
+                addBtn.onclick = () => _this.addTask(inputBox.value)
+
+                // @TODO EDIT TASK
+
+                //delete task
+                todoList.onclick = function (e) {
+                    const taskNode = e.target
+                    if (
+                        taskNode.className.includes('icon') ||
+                        taskNode.className.includes('fas')
+                    )
+                        _this.deleteTask(taskNode.dataset.index)
+
+                }
+
+                // delete all tasks 
+                deleteAllBtn.onclick = () => {
+                    this.listArray = []
+                    localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(this.listArray))
+                    this.showTasks()
+                }
+            },
+            render: function () {
+                this.showTasks()
+            },
+            start: function () {
+                this.handleEvents()
+
+                this.render()
+            },
+        }
+
+        app.start()
+
+    </script>
+</body>
+
+</html>
