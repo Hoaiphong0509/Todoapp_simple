@@ -283,6 +283,7 @@
                 addBtn.onclick = () => _this.addTask(inputBox.value)
 
                 // @TODO EDIT TASK
+                // @@
 
                 //delete task
                 todoList.onclick = function (e) {
@@ -297,9 +298,12 @@
 
                 // delete all tasks 
                 deleteAllBtn.onclick = () => {
-                    this.listArray = []
-                    localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(this.listArray))
-                    this.showTasks()
+                    let isExecuted = confirm("Bạn có muốn xóa tất cả? Thao tác này không thể hoàn tác ⚠?")
+                    if (isExecuted) {
+                        this.listArray = []
+                        localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(this.listArray))
+                        this.showTasks()
+                    }
                 }
             },
             render: function () {
