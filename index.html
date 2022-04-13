@@ -26,7 +26,6 @@
         }
 
 
-
         * {
             margin: 0;
             padding: 0;
@@ -219,11 +218,12 @@
         const pendingTasksNumb = $('.pendingTasks')
 
         const app = {
+            isEdit: false,
             currentIndex: 0,
             listArray: [],
+            // show task function
             showTasks: function () {
-                let getLocalStorageData = localStorage.getItem(TODO_STORAGE_KEY)
-                if (getLocalStorageData) this.listArray = JSON.parse(getLocalStorageData)
+                this.getLocalStorage()
 
                 pendingTasksNumb.textContent = this.listArray.length
                 if (this.listArray.length > 0) {
@@ -239,51 +239,76 @@
                 todoList.innerHTML = newLiTag
                 inputBox.value = ''
             },
-
+            //get task list on local storage
+            getLocalStorage: function () {
+                const getLocalStorageData = localStorage.getItem(TODO_STORAGE_KEY)
+                if (getLocalStorageData) this.listArray = JSON.parse(getLocalStorageData)
+                else this.listArray = []
+            },
             // delete task function
             deleteTask: function (index) {
-                let getLocalStorageData = localStorage.getItem(TODO_STORAGE_KEY)
-                this.listArray = JSON.parse(getLocalStorageData)
+                this.getLocalStorage()
+
                 this.listArray.splice(index, 1)
                 localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(this.listArray))
                 this.showTasks()
+                this.isEdit = false
             },
+            // add task function
             addTask: function (value) {
-                const getLocalStorageData = localStorage.getItem(TODO_STORAGE_KEY)
-                if (getLocalStorageData) this.listArray = JSON.parse(getLocalStorageData)
+                this.getLocalStorage()
 
                 this.listArray.push(value)
                 localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(this.listArray))
                 this.showTasks()
                 addBtn.classList.remove('active')
+                this.isEdit = false
             },
-            // @TODO EDIT TASK
-            editTask: function () { },
+            // get info task function
+            getTask: function (taskNode) {
+                inputBox.value = taskNode.innerText
+                this.isEdit = true
+                this.currentIndex = taskNode.dataset.index
+                inputBox.focus()
+
+            },
+            // edit task function
+            editTask: function (indexValue, value) {
+                this.getLocalStorage()
+
+                this.listArray[indexValue] = value
+                localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(this.listArray))
+                this.showTasks()
+                this.isEdit = false
+
+            },
             handleEvents: function () {
                 const _this = this
 
                 //active button add onkeyup
                 inputBox.onkeyup = () => {
-                    let userEnteredValue = inputBox.value
-                    if (userEnteredValue.trim() != 0)
-                        addBtn.classList.add('active')
-                    else
-                        addBtn.classList.remove('active')
-
+                    const userEnteredValue = inputBox.value
+                    if (!_this.isEdit) {
+                        if (userEnteredValue.trim() != 0)
+                            addBtn.classList.add('active')
+                        else
+                            addBtn.classList.remove('active')
+                    }
                 }
 
                 //add task by press ENTER
                 inputBox.addEventListener('keyup', (e) => {
-                    if (e.key == 'Enter' && inputBox.value)
-                        _this.addTask(inputBox.value)
+                    const userEnteredValue = inputBox.value
+                    if (e.key == 'Enter' && userEnteredValue) {
+                        if (!_this.isEdit) _this.addTask(userEnteredValue)
+                        else _this.editTask(_this.currentIndex, userEnteredValue)
+                    }
+
 
                 })
 
                 //add task by click button
                 addBtn.onclick = () => _this.addTask(inputBox.value)
-
-                // @TODO EDIT TASK
-                // @@
 
                 //delete task
                 todoList.onclick = function (e) {
@@ -293,6 +318,7 @@
                         taskNode.className.includes('fas')
                     )
                         _this.deleteTask(taskNode.dataset.index)
+                    else _this.getTask(taskNode)
 
                 }
 
